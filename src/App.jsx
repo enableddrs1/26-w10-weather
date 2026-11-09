@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CloudSun, RefreshCw, AlertCircle, MapPin } from 'lucide-react'
+import { CloudSun, RefreshCw, AlertCircle, MapPin, History, Trash2, X } from 'lucide-react'
 import {
   DEFAULT_CITIES,
   fetchWeatherData,
@@ -12,12 +12,70 @@ import WeeklyForecast from './components/WeeklyForecast'
 import CitySearch from './components/CitySearch'
 import './App.css'
 
+const RECENT_CITIES_KEY = 'recent_weather_cities'
+
+// 날씨 상태 및 주/야간에 따른 동적 테마 클래스 계산 (옵션 A)
+function getWeatherThemeClass(current) {
+  if (!current) return 'theme-default'
+  const isDay = current.is_day === 1
+  const code = current.weather_code
+
+  if (code === 95) return 'theme-thunder'
+  if ([71, 73, 75, 77].includes(code)) return 'theme-snowy'
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'theme-rainy'
+  if ([2, 3, 45, 48].includes(code)) return isDay ? 'theme-cloudy-day' : 'theme-cloudy-night'
+  if ([0, 1].includes(code)) return isDay ? 'theme-clear-day' : 'theme-clear-night'
+  return isDay ? 'theme-clear-day' : 'theme-clear-night'
+}
+
 export default function App() {
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITIES[0])
   const [weatherData, setWeatherData] = useState(null)
   const [airData, setAirData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // 옵션 B: 최근 본 도시 (localStorage 연동)
+  const [recentCities, setRecentCities] = useState(() => {
+    try {
+      const saved = localStorage.getItem(RECENT_CITIES_KEY)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  // 최근 본 도시 추가
+  const addRecentCity = useCallback((city) => {
+    setRecentCities((prev) => {
+      const filtered = prev.filter(
+        (c) => c.name !== city.name || (c.country && c.country !== city.country)
+      )
+      const updated = [city, ...filtered].slice(0, 5) // 최근 5개 유지
+      try {
+        localStorage.setItem(RECENT_CITIES_KEY, JSON.stringify(updated))
+      } catch (e) {
+        console.error('localStorage 저장 실패:', e)
+      }
+      return updated
+    })
+  }, [])
+
+  // 최근 본 도시 개별 삭제
+  const removeRecentCity = (e, cityName) => {
+    e.stopPropagation()
+    setRecentCities((prev) => {
+      const updated = prev.filter((c) => c.name !== cityName)
+      localStorage.setItem(RECENT_CITIES_KEY, JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  // 최근 본 도시 전체 삭제
+  const clearRecentCities = () => {
+    setRecentCities([])
+    localStorage.removeItem(RECENT_CITIES_KEY)
+  }
 
   // 날씨 및 미세먼지 데이터 병렬 조회
   const loadDashboardData = useCallback(async (city) => {
@@ -30,106 +88,144 @@ export default function App() {
       ])
       setWeatherData(weather)
       setAirData(air)
+      addRecentCity(city)
     } catch (err) {
       console.error('데이터 조회 오류:', err)
       setError('기상 정보를 불러오는데 실패했습니다. 네트워크 상태를 확인하시거나 잠시 후 다시 시도해 주세요.')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [addRecentCity])
 
   useEffect(() => {
     loadDashboardData(selectedCity)
   }, [selectedCity, loadDashboardData])
 
+  const themeClass = getWeatherThemeClass(weatherData?.current)
+
   return (
-    <div className="dashboard-container">
-      {/* 1. 상단 대시보드 헤더 */}
-      <header className="dashboard-header">
-        <div className="header-title-wrap">
-          <div className="logo-badge">
-            <CloudSun size={28} className="logo-icon" />
-          </div>
-          <div>
-            <h1>실시간 날씨 & 미세먼지</h1>
-            <p className="subtitle">Open-Meteo API 기반 스마트 기상 대시보드</p>
-          </div>
-        </div>
-
-        <button
-          className="refresh-button"
-          onClick={() => loadDashboardData(selectedCity)}
-          disabled={loading}
-          title="최신 기상 정보 새로고침"
-        >
-          <RefreshCw size={18} className={loading ? 'spin' : ''} />
-          <span>새로고침</span>
-        </button>
-      </header>
-
-      {/* 2. 도시 검색 & 주요 도시 프리셋 바 */}
-      <section className="search-and-presets">
-        <CitySearch onSelectCity={setSelectedCity} />
-
-        <nav className="city-preset-bar" aria-label="주요 도시 빠른 선택">
-          {DEFAULT_CITIES.map((city) => (
-            <button
-              key={city.name}
-              className={`city-pill ${selectedCity.name === city.name ? 'active' : ''}`}
-              onClick={() => setSelectedCity(city)}
-            >
-              <MapPin size={13} className="city-pin-icon" />
-              <span>{city.name}</span>
-            </button>
-          ))}
-        </nav>
-      </section>
-
-      {/* 3. 메인 대시보드 콘텐츠 영역 */}
-      <main className="dashboard-main">
-        {error && (
-          <div className="error-banner" role="alert">
-            <AlertCircle size={22} className="error-icon" />
-            <div className="error-content">
-              <strong>기상 데이터를 불러오지 못했습니다</strong>
-              <p>{error}</p>
+    <div className={`dashboard-wrapper ${themeClass}`}>
+      <div className="dashboard-container">
+        {/* 대시보드 헤더 */}
+        <header className="dashboard-header">
+          <div className="header-title-wrap">
+            <div className="logo-badge">
+              <CloudSun size={28} className="logo-icon" />
             </div>
-            <button className="retry-btn" onClick={() => loadDashboardData(selectedCity)}>
-              다시 시도
-            </button>
+            <div>
+              <h1>실시간 날씨 & 미세먼지</h1>
+              <p className="subtitle">Open-Meteo API 연동 스마트 기상 대시보드</p>
+            </div>
           </div>
-        )}
 
-        {loading && !weatherData && (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>실시간 기상 및 대기 데이터를 불러오는 중입니다...</p>
+          <button
+            className="refresh-button"
+            onClick={() => loadDashboardData(selectedCity)}
+            disabled={loading}
+            title="최신 기상 정보 새로고침"
+          >
+            <RefreshCw size={18} className={loading ? 'spin' : ''} />
+            <span>새로고침</span>
+          </button>
+        </header>
+
+        {/* 도시 검색 & 프리셋 & 최근 본 도시 */}
+        <section className="search-and-presets">
+          <CitySearch onSelectCity={setSelectedCity} />
+
+          {/* 옵션 B: 최근 본 도시 뱃지 바 */}
+          {recentCities.length > 0 && (
+            <div className="recent-cities-section">
+              <div className="recent-header">
+                <span className="recent-title">
+                  <History size={13} /> 최근 본 도시
+                </span>
+                <button className="clear-recent-btn" onClick={clearRecentCities} title="전체 삭제">
+                  <Trash2 size={12} /> 기록 지우기
+                </button>
+              </div>
+              <div className="recent-chips-list">
+                {recentCities.map((city) => (
+                  <button
+                    key={`${city.name}-${city.lat}`}
+                    className={`recent-chip ${selectedCity.name === city.name ? 'active' : ''}`}
+                    onClick={() => setSelectedCity(city)}
+                  >
+                    <span>{city.name}</span>
+                    <span
+                      className="chip-remove"
+                      onClick={(e) => removeRecentCity(e, city.name)}
+                      title="삭제"
+                    >
+                      <X size={12} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 주요 도시 빠른 선택 버튼 바 */}
+          <nav className="city-preset-bar" aria-label="주요 도시 빠른 선택">
+            {DEFAULT_CITIES.map((city) => (
+              <button
+                key={city.name}
+                className={`city-pill ${selectedCity.name === city.name ? 'active' : ''}`}
+                onClick={() => setSelectedCity(city)}
+              >
+                <MapPin size={13} className="city-pin-icon" />
+                <span>{city.name}</span>
+              </button>
+            ))}
+          </nav>
+        </section>
+
+        {/* 메인 대시보드 콘텐츠 영역 */}
+        <main className="dashboard-main">
+          {error && (
+            <div className="error-banner" role="alert">
+              <AlertCircle size={22} className="error-icon" />
+              <div className="error-content">
+                <strong>기상 데이터를 불러오지 못했습니다</strong>
+                <p>{error}</p>
+              </div>
+              <button className="retry-btn" onClick={() => loadDashboardData(selectedCity)}>
+                다시 시도
+              </button>
+            </div>
+          )}
+
+          {loading && !weatherData && (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>실시간 기상 및 대기 데이터를 불러오는 중입니다...</p>
+            </div>
+          )}
+
+          {/* 1열: 현재 날씨 카드 & 미세먼지 카드 */}
+          <div className={`cards-grid ${loading ? 'dimmed' : ''}`}>
+            <CurrentWeather city={selectedCity} weather={weatherData} />
+            <AirQualityCard airQuality={airData} />
           </div>
-        )}
 
-        {/* 1열: 현재 날씨 카드 & 미세먼지 카드 (컴포넌트 분리) */}
-        <div className={`cards-grid ${loading ? 'dimmed' : ''}`}>
-          <CurrentWeather city={selectedCity} weather={weatherData} />
-          <AirQualityCard airQuality={airData} />
-        </div>
+          {/* 2열: 24시간 시간별 기온 SVG 차트 */}
+          <div className={`chart-section ${loading ? 'dimmed' : ''}`}>
+            <HourlyChart weather={weatherData} />
+          </div>
 
-        {/* 2열: 24시간 시간별 기온 SVG 차트 */}
-        <div className={`chart-section ${loading ? 'dimmed' : ''}`}>
-          <HourlyChart weather={weatherData} />
-        </div>
+          {/* 3열: 7일간 주간 예보 */}
+          <div className={`forecast-section ${loading ? 'dimmed' : ''}`}>
+            <WeeklyForecast weather={weatherData} />
+          </div>
+        </main>
 
-        {/* 3열: 7일간 주간 예보 */}
-        <div className={`forecast-section ${loading ? 'dimmed' : ''}`}>
-          <WeeklyForecast weather={weatherData} />
-        </div>
-      </main>
-
-      <footer className="dashboard-footer">
-        <p>
-          실시간 기상 및 대기질 데이터 제공: <strong>Open-Meteo.com</strong> ·
-          HTTPS 암호화 통신 & 400ms 디바운스 적용
-        </p>
-      </footer>
+        <footer className="dashboard-footer">
+          <p>
+            실시간 기상 및 대기질 데이터: <strong>Open-Meteo.com</strong> ·
+            동적 날씨 테마 & 최근 검색 저장 지원
+          </p>
+        </footer>
+      </div>
     </div>
   )
 }
