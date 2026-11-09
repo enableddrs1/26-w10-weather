@@ -1,69 +1,170 @@
 /* ==========================================================================
-   실시간 날씨 & 미세먼지 완성형 대시보드 스타일
+   실시간 날씨 & 미세먼지 대시보드 스타일
+   - 라이트 모드 (기본) / 다크 모드 동적 전환
+   - 현재 기상 상태별 고화질 배경 이미지 + 조화로운 색상 그라데이션
    ========================================================================== */
 
-:root {
+/* --------------------------------------------------------------------------
+   1. 테마 변수 정의 (라이트 모드 기본 / 다크 모드)
+   -------------------------------------------------------------------------- */
+
+/* ☀️ 라이트 모드 (기본) */
+.dashboard-wrapper.mode-light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-sub: rgba(241, 245, 249, 0.75);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.16);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --accent-blue: #0284c7;
+  --accent-indigo: #4f46e5;
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --dropdown-bg: #ffffff;
+  --chip-bg: rgba(255, 255, 255, 0.7);
+  --chip-hover: #ffffff;
+  --chart-text: #334155;
+  --chart-subtext: #64748b;
+  --chart-dot-border: #ffffff;
+}
+
+/* 🌙 다크 모드 */
+.dashboard-wrapper.mode-dark {
   --bg-primary: #0b0f19;
   --bg-secondary: #1e293b;
-  --bg-card: rgba(30, 41, 59, 0.72);
-  --bg-card-sub: rgba(15, 23, 42, 0.55);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.18);
+  --bg-card: rgba(30, 41, 59, 0.75);
+  --bg-card-sub: rgba(15, 23, 42, 0.6);
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-hover: rgba(255, 255, 255, 0.2);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --accent-blue: #38bdf8;
   --accent-indigo: #6366f1;
-  --radius-lg: 16px;
-  --radius-md: 10px;
   --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --input-bg: rgba(30, 41, 59, 0.7);
+  --dropdown-bg: #1e293b;
+  --chip-bg: rgba(30, 41, 59, 0.6);
+  --chip-hover: rgba(255, 255, 255, 0.1);
+  --chart-text: #f8fafc;
+  --chart-subtext: #94a3b8;
+  --chart-dot-border: #0b0f19;
 }
 
-/* 🎨 옵션 A: 날씨 및 낮/밤 상태별 동적 비주얼 테마 래퍼 */
+/* --------------------------------------------------------------------------
+   2. 기상 상태별 배경 이미지 + 감성 그라데이션 자동 결합
+   -------------------------------------------------------------------------- */
+
 .dashboard-wrapper {
   min-height: 100vh;
   width: 100%;
-  transition: background 0.8s ease, color 0.4s ease;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  transition: background 0.8s ease, color 0.3s ease;
 }
 
-/* 맑은 낮 */
-.theme-clear-day {
-  background: radial-gradient(circle at 50% 0%, #1e3a8a 0%, #0f172a 60%, #0b0f19 100%);
+/* ☀️ 맑은 낮 (Clear Day) */
+.dashboard-wrapper.mode-light.weather-clear-day {
+  background-image: 
+    linear-gradient(135deg, rgba(224, 242, 254, 0.88), rgba(186, 230, 253, 0.82)),
+    url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-clear-day {
+  background-image: 
+    linear-gradient(135deg, rgba(12, 74, 110, 0.88), rgba(15, 23, 42, 0.92)),
+    url('https://images.unsplash.com/photo-1601297183305-6df142704ea2?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 맑은 밤 */
-.theme-clear-night {
-  background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #09090b 70%, #030712 100%);
+/* 🌙 맑은 밤 (Clear Night) */
+.dashboard-wrapper.mode-light.weather-clear-night {
+  background-image: 
+    linear-gradient(135deg, rgba(224, 231, 255, 0.88), rgba(199, 210, 254, 0.82)),
+    url('https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-clear-night {
+  background-image: 
+    linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(3, 7, 18, 0.95)),
+    url('https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 흐린 낮 */
-.theme-cloudy-day {
-  background: radial-gradient(circle at 50% 0%, #334155 0%, #1e293b 60%, #0b0f19 100%);
+/* ⛅ 흐린 낮 (Cloudy Day) */
+.dashboard-wrapper.mode-light.weather-cloudy-day {
+  background-image: 
+    linear-gradient(135deg, rgba(241, 245, 249, 0.88), rgba(226, 232, 240, 0.84)),
+    url('https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-cloudy-day {
+  background-image: 
+    linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)),
+    url('https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 흐린 밤 */
-.theme-cloudy-night {
-  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%, #020617 100%);
+/* ☁️ 흐린 밤 (Cloudy Night) */
+.dashboard-wrapper.mode-light.weather-cloudy-night {
+  background-image: 
+    linear-gradient(135deg, rgba(226, 232, 240, 0.9), rgba(203, 213, 225, 0.85)),
+    url('https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-cloudy-night {
+  background-image: 
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96)),
+    url('https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 비 오는 날씨 */
-.theme-rainy {
-  background: radial-gradient(circle at 50% 0%, #0c4a6e 0%, #0f172a 65%, #082f49 100%);
+/* 🌧️ 비 (Rainy) */
+.dashboard-wrapper.mode-light.weather-rainy {
+  background-image: 
+    linear-gradient(135deg, rgba(224, 242, 254, 0.88), rgba(203, 213, 225, 0.85)),
+    url('https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-rainy {
+  background-image: 
+    linear-gradient(135deg, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.94)),
+    url('https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 눈 내리는 날씨 */
-.theme-snowy {
-  background: radial-gradient(circle at 50% 0%, #1e3a5f 0%, #1e293b 65%, #0f172a 100%);
+/* ❄️ 눈 (Snowy) */
+.dashboard-wrapper.mode-light.weather-snowy {
+  background-image: 
+    linear-gradient(135deg, rgba(240, 249, 255, 0.9), rgba(224, 242, 254, 0.85)),
+    url('https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-snowy {
+  background-image: 
+    linear-gradient(135deg, rgba(12, 74, 110, 0.88), rgba(15, 23, 42, 0.92)),
+    url('https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 뇌우 / 천둥번개 */
-.theme-thunder {
-  background: radial-gradient(circle at 50% 0%, #3b0764 0%, #18052e 65%, #0b0217 100%);
+/* ⛈️ 뇌우 (Thunder) */
+.dashboard-wrapper.mode-light.weather-thunder {
+  background-image: 
+    linear-gradient(135deg, rgba(237, 233, 254, 0.88), rgba(221, 214, 254, 0.82)),
+    url('https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80');
+}
+.dashboard-wrapper.mode-dark.weather-thunder {
+  background-image: 
+    linear-gradient(135deg, rgba(59, 7, 100, 0.9), rgba(11, 2, 23, 0.95)),
+    url('https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80');
 }
 
-/* 기본 테마 */
-.theme-default {
-  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f19 75%);
+/* 🌫️ 안개 (Fog) */
+.dashboard-wrapper.mode-light.weather-fog {
+  background-image: 
+    linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.85)),
+    url('https://images.unsplash.com/photo-1487621167305-5d248087c724?auto=format&fit=crop&w=1920&q=80');
 }
+.dashboard-wrapper.mode-dark.weather-fog {
+  background-image: 
+    linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)),
+    url('https://images.unsplash.com/photo-1487621167305-5d248087c724?auto=format&fit=crop&w=1920&q=80');
+}
+
+/* --------------------------------------------------------------------------
+   3. 대시보드 메인 레이아웃 및 헤더
+   -------------------------------------------------------------------------- */
 
 .dashboard-container {
   max-width: 980px;
@@ -76,7 +177,6 @@
   flex-direction: column;
 }
 
-/* 헤더 영역 */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -98,7 +198,7 @@
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   background: linear-gradient(135deg, #0284c7, #6366f1);
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
   flex-shrink: 0;
@@ -113,9 +213,7 @@
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
-  background: linear-gradient(to right, #ffffff, #cbd5e1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-main);
 }
 
 .dashboard-header .subtitle {
@@ -124,24 +222,59 @@
   margin: 0.25rem 0 0 0;
 }
 
-.refresh-button {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* 라이트 / 다크 모드 토글 버튼 */
+.theme-toggle-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.1rem;
-  background: rgba(255, 255, 255, 0.06);
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
   color: var(--text-main);
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-card-sub);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.theme-btn-icon {
+  color: #f59e0b;
+}
+
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .refresh-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--bg-card-sub);
   border-color: var(--border-hover);
   transform: translateY(-1px);
 }
@@ -151,15 +284,17 @@
   cursor: not-allowed;
 }
 
-/* 검색 & 최근 & 프리셋 영역 */
+/* --------------------------------------------------------------------------
+   4. 검색 & 최근 본 도시 & 주요 도시 바
+   -------------------------------------------------------------------------- */
+
 .search-and-presets {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 
-/* 도시 검색 바 (디바운스 & 드롭다운) */
 .city-search-container {
   position: relative;
   width: 100%;
@@ -181,20 +316,20 @@
 .search-input {
   width: 100%;
   padding: 0.85rem 2.8rem 0.85rem 2.8rem;
-  background: rgba(30, 41, 59, 0.65);
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   color: var(--text-main);
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .search-input:focus {
   border-color: var(--accent-blue);
-  background: rgba(30, 41, 59, 0.9);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
 }
 
 .search-spinner {
@@ -227,10 +362,10 @@
   top: calc(100% + 0.4rem);
   left: 0;
   right: 0;
-  background: #1e293b;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-md);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  background: var(--dropdown-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
   z-index: 50;
   margin: 0;
   padding: 0.4rem 0;
@@ -249,7 +384,7 @@
 }
 
 .search-item:hover {
-  background: rgba(56, 189, 248, 0.12);
+  background: rgba(2, 132, 199, 0.1);
 }
 
 .search-item-info {
@@ -269,11 +404,7 @@
   color: var(--text-main);
 }
 
-.item-region {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
+.item-region,
 .item-country {
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -292,14 +423,14 @@
   color: var(--text-muted);
 }
 
-/* 🏷️ 옵션 B: 최근 본 도시 뱃지 섹션 */
+/* 최근 본 도시 섹션 */
 .recent-cities-section {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-card-sub);
   padding: 0.65rem 0.85rem;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
 }
 
@@ -326,7 +457,7 @@
   gap: 0.25rem;
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0.15rem 0.35rem;
@@ -349,7 +480,7 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.35rem 0.75rem;
-  background: rgba(30, 41, 59, 0.6);
+  background: var(--chip-bg);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
   color: var(--text-main);
@@ -359,12 +490,12 @@
 }
 
 .recent-chip:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--chip-hover);
   border-color: var(--border-hover);
 }
 
 .recent-chip.active {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(2, 132, 199, 0.15);
   border-color: var(--accent-blue);
   color: var(--accent-blue);
   font-weight: 600;
@@ -381,11 +512,11 @@
 }
 
 .chip-remove:hover {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
 }
 
-/* 주요 도시 빠른 선택 버튼 바 */
+/* 주요 도시 탭 바 */
 .city-preset-bar {
   display: flex;
   flex-wrap: wrap;
@@ -397,7 +528,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.45rem 0.9rem;
-  background: rgba(30, 41, 59, 0.5);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
   color: var(--text-muted);
@@ -405,10 +536,11 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
 .city-pill:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-card-sub);
   color: var(--text-main);
 }
 
@@ -423,7 +555,10 @@
   opacity: 0.8;
 }
 
-/* 메인 대시보드 레이아웃 */
+/* --------------------------------------------------------------------------
+   5. 카드 공통 및 날씨/대기질 카드
+   -------------------------------------------------------------------------- */
+
 .dashboard-main {
   flex: 1;
   display: flex;
@@ -449,17 +584,17 @@
   pointer-events: none;
 }
 
-/* 공통 카드 스타일 */
 .card {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   padding: 1.5rem;
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .card-header {
@@ -484,7 +619,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--accent-blue);
-  background: rgba(56, 189, 248, 0.1);
+  background: rgba(2, 132, 199, 0.1);
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
 }
@@ -506,7 +641,7 @@
   border: 1px solid;
 }
 
-/* 현재 날씨 카드 */
+/* 현재 날씨 */
 .weather-primary {
   display: flex;
   flex-direction: column;
@@ -530,6 +665,7 @@
   font-size: 4.25rem;
   font-weight: 800;
   letter-spacing: -0.04em;
+  color: var(--text-main);
 }
 
 .temp-unit {
@@ -558,7 +694,7 @@
 .detail-item {
   background: var(--bg-card-sub);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 0.75rem 0.85rem;
 }
 
@@ -577,7 +713,7 @@
   color: var(--text-main);
 }
 
-/* 대기질(미세먼지) 카드 */
+/* 대기질(미세먼지) */
 .air-primary {
   padding: 0.5rem 0 1rem;
   text-align: center;
@@ -605,7 +741,7 @@
 .air-metric-card {
   background: var(--bg-card-sub);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 0.85rem 1rem;
 }
 
@@ -631,15 +767,20 @@
   font-size: 1.85rem;
   font-weight: 700;
   margin: 0.15rem 0 0.4rem;
+  color: var(--text-main);
 }
 
 .metric-scale {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 9999px;
   overflow: hidden;
   margin-bottom: 0.35rem;
+}
+
+.mode-dark .metric-scale {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .scale-bar {
@@ -653,7 +794,10 @@
   color: var(--text-muted);
 }
 
-/* 24시간 시간별 기온 차트 */
+/* --------------------------------------------------------------------------
+   6. 24시간 기온 SVG 차트
+   -------------------------------------------------------------------------- */
+
 .hourly-card {
   overflow: hidden;
 }
@@ -672,6 +816,10 @@
   padding-bottom: 0.5rem;
   margin: 0.5rem -0.5rem 0;
   scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.mode-dark .hourly-scroll-container {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
@@ -680,8 +828,12 @@
 }
 
 .hourly-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
+}
+
+.mode-dark .hourly-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .hourly-svg {
@@ -689,14 +841,14 @@
 }
 
 .chart-temp-label {
-  fill: #f8fafc;
+  fill: var(--chart-text);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .chart-dot {
-  fill: #38bdf8;
-  stroke: #0b0f19;
+  fill: var(--accent-blue);
+  stroke: var(--chart-dot-border);
   stroke-width: 2;
   transition: r 0.2s ease;
 }
@@ -708,16 +860,19 @@
 }
 
 .chart-time-label {
-  fill: #94a3b8;
+  fill: var(--chart-subtext);
   font-size: 11px;
 }
 
 .chart-time-label.active {
-  fill: #38bdf8;
+  fill: var(--accent-blue);
   font-weight: 700;
 }
 
-/* 7일간 주간 예보 카드 */
+/* --------------------------------------------------------------------------
+   7. 7일간 주간 예보 카드
+   -------------------------------------------------------------------------- */
+
 .weekly-header-info {
   display: inline-flex;
   align-items: center;
@@ -739,17 +894,21 @@
   padding: 0.65rem 0.85rem;
   background: var(--bg-card-sub);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   transition: background 0.15s ease;
 }
 
 .weekly-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.mode-dark .weekly-row:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
 .weekly-row.today-row {
-  border-color: rgba(56, 189, 248, 0.3);
-  background: rgba(56, 189, 248, 0.05);
+  border-color: rgba(2, 132, 199, 0.3);
+  background: rgba(2, 132, 199, 0.06);
 }
 
 .weekly-day-info {
@@ -760,6 +919,7 @@
 .weekly-day-name {
   font-size: 0.875rem;
   font-weight: 600;
+  color: var(--text-main);
 }
 
 .weekly-day-date {
@@ -783,8 +943,8 @@
   align-items: center;
   gap: 0.2rem;
   font-size: 0.7rem;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent-blue);
+  background: rgba(2, 132, 199, 0.12);
   padding: 0.15rem 0.4rem;
   border-radius: 9999px;
   font-weight: 600;
@@ -799,7 +959,7 @@
 
 .temp-min-text {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   width: 28px;
   text-align: right;
   font-weight: 600;
@@ -807,7 +967,7 @@
 
 .temp-max-text {
   font-size: 0.85rem;
-  color: #f8fafc;
+  color: var(--text-main);
   width: 28px;
   text-align: left;
   font-weight: 600;
@@ -818,9 +978,13 @@
   flex: 1;
   max-width: 130px;
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 9999px;
   overflow: hidden;
+}
+
+.mode-dark .temp-bar-track {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .temp-bar-fill {
@@ -831,7 +995,10 @@
   border-radius: 9999px;
 }
 
-/* 로딩 & 에러 공통 */
+/* --------------------------------------------------------------------------
+   8. 로딩, 에러 및 푸터
+   -------------------------------------------------------------------------- */
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -845,10 +1012,15 @@
 .spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(0, 0, 0, 0.1);
   border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.mode-dark .spinner {
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-blue);
 }
 
 .spin {
@@ -867,8 +1039,12 @@
   gap: 1rem;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 1rem 1.25rem;
+  color: #b91c1c;
+}
+
+.mode-dark .error-banner {
   color: #fca5a5;
 }
 
@@ -884,13 +1060,16 @@
 .error-content strong {
   display: block;
   font-size: 0.9rem;
+  color: #991b1b;
+}
+
+.mode-dark .error-content strong {
   color: #fee2e2;
 }
 
 .error-content p {
   margin: 0.2rem 0 0;
   font-size: 0.8rem;
-  color: #fca5a5;
 }
 
 .retry-btn {
@@ -898,7 +1077,7 @@
   background: #ef4444;
   color: #ffffff;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -909,7 +1088,6 @@
   background: #dc2626;
 }
 
-/* 푸터 */
 .dashboard-footer {
   margin-top: 3rem;
   padding-top: 1.5rem;
@@ -919,7 +1097,10 @@
   color: var(--text-muted);
 }
 
-/* 모바일 반응형 */
+/* --------------------------------------------------------------------------
+   9. 반응형 모바일 최적화
+   -------------------------------------------------------------------------- */
+
 @media (max-width: 640px) {
   .dashboard-header {
     flex-direction: column;
@@ -927,8 +1108,9 @@
     gap: 1rem;
   }
 
-  .refresh-button {
-    align-self: flex-end;
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .cards-grid {

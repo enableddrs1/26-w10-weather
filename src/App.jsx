@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CloudSun, RefreshCw, AlertCircle, MapPin, History, Trash2, X } from 'lucide-react'
+import {
+  CloudSun,
+  RefreshCw,
+  AlertCircle,
+  MapPin,
+  History,
+  Trash2,
+  X,
+  Sun,
+  Moon
+} from 'lucide-react'
 import {
   DEFAULT_CITIES,
   fetchWeatherData,
@@ -13,29 +23,41 @@ import CitySearch from './components/CitySearch'
 import './App.css'
 
 const RECENT_CITIES_KEY = 'recent_weather_cities'
+const THEME_MODE_KEY = 'weather_dashboard_theme_mode'
 
-// 날씨 상태 및 주/야간에 따른 동적 테마 클래스 계산 (옵션 A)
-function getWeatherThemeClass(current) {
-  if (!current) return 'theme-default'
+// 현재 날씨 코드 및 주야간(is_day) 기반 기상 상태 키 추출
+function getWeatherConditionKey(current) {
+  if (!current) return 'clear-day'
   const isDay = current.is_day === 1
   const code = current.weather_code
 
-  if (code === 95) return 'theme-thunder'
-  if ([71, 73, 75, 77].includes(code)) return 'theme-snowy'
-  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'theme-rainy'
-  if ([2, 3, 45, 48].includes(code)) return isDay ? 'theme-cloudy-day' : 'theme-cloudy-night'
-  if ([0, 1].includes(code)) return isDay ? 'theme-clear-day' : 'theme-clear-night'
-  return isDay ? 'theme-clear-day' : 'theme-clear-night'
+  if (code === 95) return 'thunder'
+  if ([71, 73, 75, 77].includes(code)) return 'snowy'
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'rainy'
+  if ([45, 48].includes(code)) return 'fog'
+  if ([2, 3].includes(code)) return isDay ? 'cloudy-day' : 'cloudy-night'
+  if ([0, 1].includes(code)) return isDay ? 'clear-day' : 'clear-night'
+  return isDay ? 'clear-day' : 'clear-night'
 }
 
 export default function App() {
+  // 1. 테마 모드: 기본값 'light' (요구사항)
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem(THEME_MODE_KEY)
+      return saved === 'dark' ? 'dark' : 'light' // 기본값: light
+    } catch {
+      return 'light'
+    }
+  })
+
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITIES[0])
   const [weatherData, setWeatherData] = useState(null)
   const [airData, setAirData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // 옵션 B: 최근 본 도시 (localStorage 연동)
+  // 2. 최근 본 도시 (localStorage 연동)
   const [recentCities, setRecentCities] = useState(() => {
     try {
       const saved = localStorage.getItem(RECENT_CITIES_KEY)
@@ -45,13 +67,26 @@ export default function App() {
     }
   })
 
+  // 테마 모드 토글 함수
+  const toggleThemeMode = () => {
+    setThemeMode((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light'
+      try {
+        localStorage.setItem(THEME_MODE_KEY, next)
+      } catch (e) {
+        console.error('테마 모드 저장 실패:', e)
+      }
+      return next
+    })
+  }
+
   // 최근 본 도시 추가
   const addRecentCity = useCallback((city) => {
     setRecentCities((prev) => {
       const filtered = prev.filter(
         (c) => c.name !== city.name || (c.country && c.country !== city.country)
       )
-      const updated = [city, ...filtered].slice(0, 5) // 최근 5개 유지
+      const updated = [city, ...filtered].slice(0, 5)
       try {
         localStorage.setItem(RECENT_CITIES_KEY, JSON.stringify(updated))
       } catch (e) {
@@ -101,10 +136,10 @@ export default function App() {
     loadDashboardData(selectedCity)
   }, [selectedCity, loadDashboardData])
 
-  const themeClass = getWeatherThemeClass(weatherData?.current)
+  const weatherKey = getWeatherConditionKey(weatherData?.current)
 
   return (
-    <div className={`dashboard-wrapper ${themeClass}`}>
+    <div className={`dashboard-wrapper mode-${themeMode} weather-${weatherKey}`}>
       <div className="dashboard-container">
         {/* 대시보드 헤더 */}
         <header className="dashboard-header">
@@ -118,22 +153,45 @@ export default function App() {
             </div>
           </div>
 
-          <button
-            className="refresh-button"
-            onClick={() => loadDashboardData(selectedCity)}
-            disabled={loading}
-            title="최신 기상 정보 새로고침"
-          >
-            <RefreshCw size={18} className={loading ? 'spin' : ''} />
-            <span>새로고침</span>
-          </button>
+          <div className="header-actions">
+            {/* 라이트 / 다크 모드 토글 버튼 */}
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleThemeMode}
+              title={themeMode === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
+              aria-label="테마 모드 전환"
+            >
+              {themeMode === 'light' ? (
+                <>
+                  <Moon size={18} className="theme-btn-icon" />
+                  <span>다크 모드</span>
+                </>
+              ) : (
+                <>
+                  <Sun size={18} className="theme-btn-icon" />
+                  <span>라이트 모드</span>
+                </>
+              )}
+            </button>
+
+            {/* 새로고침 버튼 */}
+            <button
+              className="refresh-button"
+              onClick={() => loadDashboardData(selectedCity)}
+              disabled={loading}
+              title="최신 기상 정보 새로고침"
+            >
+              <RefreshCw size={17} className={loading ? 'spin' : ''} />
+              <span>새로고침</span>
+            </button>
+          </div>
         </header>
 
         {/* 도시 검색 & 프리셋 & 최근 본 도시 */}
         <section className="search-and-presets">
           <CitySearch onSelectCity={setSelectedCity} />
 
-          {/* 옵션 B: 최근 본 도시 뱃지 바 */}
+          {/* 최근 본 도시 뱃지 바 */}
           {recentCities.length > 0 && (
             <div className="recent-cities-section">
               <div className="recent-header">
@@ -221,8 +279,8 @@ export default function App() {
 
         <footer className="dashboard-footer">
           <p>
-            실시간 기상 및 대기질 데이터: <strong>Open-Meteo.com</strong> ·
-            동적 날씨 테마 & 최근 검색 저장 지원
+            기상 데이터: <strong>Open-Meteo.com</strong> ·
+            기상 연동 동적 테마 & 라이트/다크 모드 지원
           </p>
         </footer>
       </div>
