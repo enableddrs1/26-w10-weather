@@ -27,7 +27,7 @@ import {
 } from './api/weather'
 import './App.css'
 
-// 날씨 아이콘 매핑 컴포넌트
+// 날씨 아이콘 매핑
 const ICON_COMPONENTS = {
   Sun,
   SunDim,
@@ -52,7 +52,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // 날씨 및 미세먼지 데이터 조회
+  // 날씨 및 미세먼지 데이터 병렬 조회
   const loadDashboardData = useCallback(async (city) => {
     setLoading(true)
     setError(null)
@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     <div className="dashboard-container">
-      {/* 대시보드 헤더 */}
+      {/* 1. 상단 대시보드 헤더 */}
       <header className="dashboard-header">
         <div className="header-title-wrap">
           <div className="logo-badge">
@@ -90,13 +90,13 @@ export default function App() {
           </div>
           <div>
             <h1>실시간 날씨 & 미세먼지</h1>
-            <p className="subtitle">Open-Meteo API 실시간 기상 관측 대시보드</p>
+            <p className="subtitle">Open-Meteo API 연동 실시간 기상 관측 대시보드</p>
           </div>
         </div>
 
-        <button 
+        <button
           className="refresh-button"
-          onClick={() => loadDashboardData(selectedCity)} 
+          onClick={() => loadDashboardData(selectedCity)}
           disabled={loading}
           title="새로고침"
         >
@@ -105,8 +105,8 @@ export default function App() {
         </button>
       </header>
 
-      {/* 주요 도시 빠른 선택 버튼 바 */}
-      <nav className="city-preset-bar" aria-label="도시 선택">
+      {/* 2. 상단 주요 도시 빠른 선택 버튼 바 (서울(강서), 시청, 인천, 부산, 대구, 대전, 광주, 제주) */}
+      <nav className="city-preset-bar" aria-label="주요 도시 빠른 선택">
         {DEFAULT_CITIES.map((city) => (
           <button
             key={city.name}
@@ -119,7 +119,7 @@ export default function App() {
         ))}
       </nav>
 
-      {/* 메인 콘텐츠 영역 */}
+      {/* 3. 메인 콘텐츠 영역 (로딩/에러/카드 그리드) */}
       <main className="dashboard-main">
         {error && (
           <div className="error-banner" role="alert">
@@ -141,7 +141,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 날씨 & 미세먼지 카드 그리드 */}
+        {/* 현재 날씨 카드 & 미세먼지 카드 그리드 */}
         <div className={`cards-grid ${loading ? 'dimmed' : ''}`}>
           {/* 현재 날씨 카드 */}
           <section className="card weather-card">
@@ -239,10 +239,10 @@ export default function App() {
                       환경부 기준: {airStatus.status}
                     </span>
                     <p className="air-guide-text">
-                      {airStatus.status === '좋음' && '야외 활동하기 아주 좋은 공기질입니다!'}
+                      {airStatus.status === '좋음' && '야외 활동하기 아주 좋은 쾌적한 공기질입니다!'}
                       {airStatus.status === '보통' && '무난한 공기질입니다. 일상 활동에 지장 없습니다.'}
                       {airStatus.status === '나쁨' && '장시간 무리한 실외 활동은 피하고 마스크를 착용하세요.'}
-                      {airStatus.status === '매우 나쁨' && '실외 활동을 자제하시고 환기를 주의하세요.'}
+                      {airStatus.status === '매우 나쁨' && '실외 활동을 자제하시고 환기에 주의하세요.'}
                     </p>
                   </div>
                 </div>
@@ -255,15 +255,15 @@ export default function App() {
                     </div>
                     <div className="metric-value">{Math.round(currentAir.pm10)}</div>
                     <div className="metric-scale">
-                      <div 
-                        className="scale-bar" 
-                        style={{ 
+                      <div
+                        className="scale-bar"
+                        style={{
                           width: `${Math.min((currentAir.pm10 / 150) * 100, 100)}%`,
                           backgroundColor: airStatus.badgeColor
                         }}
                       />
                     </div>
-                    <span className="metric-standard">기준: 0~30 좋음 / 81~ 나쁨</span>
+                    <span className="metric-standard">기준: 0~30 좋음 / 31~80 보통 / 81~ 나쁨</span>
                   </div>
 
                   <div className="air-metric-card">
@@ -273,15 +273,15 @@ export default function App() {
                     </div>
                     <div className="metric-value">{Math.round(currentAir.pm2_5)}</div>
                     <div className="metric-scale">
-                      <div 
-                        className="scale-bar" 
-                        style={{ 
+                      <div
+                        className="scale-bar"
+                        style={{
                           width: `${Math.min((currentAir.pm2_5 / 75) * 100, 100)}%`,
                           backgroundColor: airStatus.badgeColor
                         }}
                       />
                     </div>
-                    <span className="metric-standard">기준: 0~15 좋음 / 36~ 나쁨</span>
+                    <span className="metric-standard">기준: 0~15 좋음 / 16~35 보통 / 36~ 나쁨</span>
                   </div>
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function App() {
       </main>
 
       <footer className="dashboard-footer">
-        <p>기상 및 대기 데이터 제공: <strong>Open-Meteo (Open-Meteo.com)</strong> · HTTPS 암호화 통신 연동</p>
+        <p>실시간 기상 및 대기 데이터 제공: <strong>Open-Meteo (Open-Meteo.com)</strong> · HTTPS 암호화 통신 연동</p>
       </footer>
     </div>
   )
